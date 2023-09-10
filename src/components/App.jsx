@@ -7,7 +7,6 @@ import { Searchbar } from './Searchbar/Searchbar';
 import { fetchImages } from './api';
 import { AppBox } from './App.styled';
 
-
 export const App = () => {
   const [query, setQuery] = useState('');
   const [images, setImages] = useState([]);
@@ -17,7 +16,6 @@ export const App = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
 
- 
   const handleSearch = value => {
     if (value === '') {
       return;
@@ -27,15 +25,13 @@ export const App = () => {
   };
 
   const handleLoadMore = () => {
-    setPage(prevState =>
-      prevState + 1);
+    setPage(prevState => prevState + 1);
   };
 
   const openModal = imageUrl => {
     setSelectedImage(imageUrl);
     setShowModal(true);
   };
-  
 
   const closeModal = () => {
     setShowModal(false);
@@ -43,7 +39,7 @@ export const App = () => {
 
   useEffect(() => {
     const fetchImageData = async () => {
-      if (query === '') {
+      if (query === '' && error === false) {
         return;
       }
 
@@ -61,23 +57,15 @@ export const App = () => {
     };
 
     fetchImageData();
-  }, [query, page]);
+  }, [query, page, error]);
 
   return (
     <AppBox>
       <Searchbar onSubmit={handleSearch} />
       <Gallery allImages={images} onImageClick={openModal} />
-      {images.length > 0 && !loading && (
-        <Button loadMore={handleLoadMore} />
-      )}
-      {showModal && (
-        <Modal
-          image={selectedImage}
-          closeModal={closeModal}
-        />
-      )}
+      {images.length > 0 && !loading && <Button loadMore={handleLoadMore} />}
+      {showModal && <Modal image={selectedImage} closeModal={closeModal} />}
       {loading && <Loader />}
     </AppBox>
   );
 };
-
