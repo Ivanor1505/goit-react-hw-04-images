@@ -1,55 +1,42 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ModalWind, Overlay } from './Modal.styled';
 
-export class Modal extends Component {
-  state = {
-    isOpen: false,
+export const Modal = ({ image, closeModal }) => {
+  const [isOpen, setIsOpen] = useState('false');
+
+  const onCloseModal = () => {
+    setIsOpen(false);
+    closeModal();
   };
 
-  openModal = () => {
-    this.setState({ isOpen: true });
-  };
-
-  closeModal = () => {
-    this.setState({ isOpen: false });
-    this.props.closeModal();
-  };
-
-  handleOverlayClick = e => {
+  const handleOverlayClick = e => {
     if (e.target === e.currentTarget) {
-      this.closeModal();
+      onCloseModal();
     }
   };
 
-  handleKeyPress = e => {
-    if (e.key === 'Escape' && this.state.isOpen) {
-      this.closeModal();
-    }
-  };
+  useEffect(() => {
+    const handleKeyPress = e => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    };
 
-  componentDidMount() {
-    document.addEventListener('keydown', this.handleKeyPress);
-    this.openModal();
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleKeyPress);
-  }
-
-  render() {
-    const { image } = this.props;
-    const { isOpen } = this.state;
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [closeModal]);
 
     return (
-      <div>
-        {isOpen && (
-          <Overlay onClick={this.handleOverlayClick}>
-            <ModalWind>
-              <img src={image} alt="" />
-            </ModalWind>
-          </Overlay>
-        )}
-      </div>
-    );
-  }
-}
+    <div>
+      {isOpen && (
+        <Overlay onClick={handleOverlayClick}>
+          <ModalWind>
+            <img src={image} alt="" />
+          </ModalWind>
+        </Overlay>
+      )}
+    </div>
+  );
+};
