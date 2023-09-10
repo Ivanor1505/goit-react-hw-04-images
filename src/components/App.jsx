@@ -20,6 +20,7 @@ export const App = () => {
     if (value === '') {
       return;
     }
+    setPage(1);
     setImages([]);
     setQuery(value);
   };
