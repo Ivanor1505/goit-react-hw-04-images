@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Button } from './Button/Button';
 import { Gallery } from './ImageGallery/ImageGallery';
 import { Loader } from './Loader/Loader';
@@ -6,78 +7,77 @@ import { Searchbar } from './Searchbar/Searchbar';
 import { fetchImages } from './api';
 import { AppBox } from './App.styled';
 
-const { Component } = require('react');
 
-export class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    page: 1,
-    loading: false,
-    error: false,
-    showModal: false,
-    selectedImage: '',
-  };
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { query, page } = this.state;
-
-    if (query !== prevState.query || page !== prevState.page) {
-      this.setState({ loading: true, error: false });
-      try {
-        const newImages = await fetchImages(query, page);
-        this.setState({ images: [...prevState.images, ...newImages.hits] });
-      } catch (error) {
-        this.setState({ error: true });
-      } finally {
-        this.setState({ loading: false });
-      }
-    }
-      }
-
-  handleSearch = value => {
+ 
+  const handleSearch = value => {
     if (value === '') {
       return;
     }
-    this.setState({ query: value });
+    setImages([]);
+    setQuery(value);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => {
-      return { page: prevState.page + 1 };
-    });
+  const handleLoadMore = () => {
+    setPage(prevState =>
+      prevState + 1);
   };
 
-  openModal = imageUrl => {
-    this.setState({
-      selectedImage: imageUrl,
-      showModal: true,
-    });
+  const openModal = imageUrl => {
+    setSelectedImage(imageUrl);
+    setShowModal(true);
+  };
+  
+
+  const closeModal = () => {
+    setShowModal(false);
   };
 
-  closeModal = () => {
-    this.setState({
-      showModal: false,
-    });
-  };
+  useEffect(() => {
+    const fetchImageData = async () => {
+      if (query === '') {
+        return;
+      }
 
-  render() {
-    const { images, showModal, loading } = this.state;
-    return (
-      <AppBox>
-        <Searchbar onSubmit={this.handleSearch} />
-        <Gallery allImages={this.state.images} onImageClick={this.openModal} />
-        {images.length > 0 && !loading && (
-          <Button loadMore={this.handleLoadMore} />
-        )}
-        {showModal && (
-          <Modal
-            image={this.state.selectedImage}
-            closeModal={this.closeModal}
-          />
-        )}
-        {loading && <Loader />}
-      </AppBox>
-    );
-  }
-}
+      setLoading(true);
+      setError(false);
+
+      try {
+        const newImages = await fetchImages(query, page);
+        setImages(prevState => [...prevState, ...newImages.hits]);
+      } catch (error) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchImageData();
+  }, [query, page]);
+
+  return (
+    <AppBox>
+      <Searchbar onSubmit={handleSearch} />
+      <Gallery allImages={images} onImageClick={openModal} />
+      {images.length > 0 && !loading && (
+        <Button loadMore={handleLoadMore} />
+      )}
+      {showModal && (
+        <Modal
+          image={selectedImage}
+          closeModal={closeModal}
+        />
+      )}
+      {loading && <Loader />}
+    </AppBox>
+  );
+};
+
